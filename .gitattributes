@@ -1,2 +1,1 @@
 *.xlsx diff=openxml
-*.xls diff=openxml
