@@ -16,7 +16,7 @@ jobs:
     env:
       TIKA_VERSION: 2.7.0
       BASE_BRANCH: main
-      DIFF_PATH: 'docs/**/*.xlsx'
+      DIFF_PATH: 'docs/*.xlsx'
     steps:
       - name: Switch to pull request branch
         uses: actions/checkout@v3
