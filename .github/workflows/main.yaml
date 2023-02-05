@@ -42,6 +42,8 @@ jobs:
           git config --global diff.openxml.textconv ./scripts/unopenxml
 
           echo "DIFF<<EOF" >> $GITHUB_ENV
+          ls -l /usr/local/bin/tika.jar
+          git diff ${BASE_BRANCH} HEAD -- "${DIFF_PATH}"
           git diff ${BASE_BRANCH} HEAD -- "${DIFF_PATH}" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
