@@ -1,0 +1,59 @@
+name: CI for excel diff
+on:
+  pull_request:
+    branches:
+      - 'main'
+    types: [opened, synchronize, closed]
+    paths: [ 'docs/**/*.xlsx' ]
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  comment_diff:
+    runs-on: ubuntu-latest
+    env:
+      TIKA_VERSION: 2.7.0
+      BASE_BRANCH: main
+      DIFF_PATH: 'docs/**/*.xlsx'
+    steps:
+      - name: Switch to pull request branch
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Fetch base branch
+        run: git fetch origin ${BASE_BRANCH}:${BASE_BRANCH}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up tika
+        run: |
+          curl -s -o /usr/local/bin/tika.jar --create-dirs -L "https://archive.apache.org/dist/tika/${TIKA_VERSION}/tika-app-${TIKA_VERSION}.jar"
+
+      - name: Run actions using diff_files
+        run: |
+          git config --global diff.openxml.textconv ./scripts/unopenxml
+
+          echo "DIFF<<EOF" >> $GITHUB_ENV
+          git diff ${BASE_BRANCH} HEAD -- "${DIFF_PATH}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          header: rule files diff
+          message: |
+            <details>
+              <summary>Show Diff Rule Files</summary>
+              ```
+              ${{ env.DIFF }}
+              ```
+            </details>
